@@ -1,0 +1,387 @@
+.subscription-manager {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.header h2 {
+  color: #1f2937;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.wallet-address{
+    color: black;
+}
+
+.cleanup-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cleanup-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.cleanup-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Alerts */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.alert.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert.success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6b7280;
+}
+
+.empty-state svg {
+  margin-bottom: 16px;
+  color: #d1d5db;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #374151;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Subscriptions Grid */
+.subscriptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Subscription Cards */
+.subscription-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border-left: 4px solid #e5e7eb;
+}
+
+.subscription-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.subscription-card.active {
+  border-left-color: #10b981;
+}
+
+.subscription-card.warning {
+  border-left-color: #f59e0b;
+}
+
+.subscription-card.expired {
+  border-left-color: #ef4444;
+  opacity: 0.8;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  background: #f9fafb;
+}
+
+.card-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.warning {
+  background: #fef2e2;
+  color: #92400e;
+}
+
+.status-badge.expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Card Content */
+.card-content {
+  padding: 0 24px 20px;
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.subscription-card.warning .progress-fill {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.subscription-card.expired .progress-fill {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+/* Subscription Details */
+.subscription-details {
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.features-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 16px 0 8px 0;
+}
+
+.features-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.feature-tag {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Card Actions */
+.card-actions {
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.expired-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 14px;
+  justify-content: center;
+}
+
+/* Info Section */
+.info-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 32px;
+}
+
+.info-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.info-section ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.info-section li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subscription-manager {
+    padding: 16px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .subscriptions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .status-badge {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header,
+  .card-content,
+  .card-actions {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .subscription-manager {
+    padding: 12px;
+  }
+}

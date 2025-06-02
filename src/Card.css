@@ -1,0 +1,28 @@
+.card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fff;
+    text-align: left;
+}
+.card h3 {
+    margin: 0 0 10px;
+}
+.card p {
+    margin: 10px 0;
+}
+.card .price {
+    font-weight: bold;
+    color: #333;
+}
+.card .subscribe-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.card .subscribe-button:hover {
+    background-color: #0056b3;
+}
