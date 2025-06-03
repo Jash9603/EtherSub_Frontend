@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Clock, AlertCircle, CheckCircle, X, Loader2, Calendar, DollarSign } from 'lucide-react';
 import { abi } from '../EtherSub.json';
-import './ManageSubscription.css';
+import './Managesubscription.css';
 
 const CONTRACT_ADDRESS = '0x78d75aB348c07E7095c83F104e91Ee98F406E723';
 
