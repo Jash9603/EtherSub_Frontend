@@ -5,16 +5,69 @@ import { abi } from '../EtherSub.json';
 import './PlansComponent.css';
 
 const CONTRACT_ADDRESS = '0x78d75aB348c07E7095c83F104e91Ee98F406E723';
+const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
 
 const PlansComponent = () => {
   const [plans, setPlans] = useState([]);
   const [features, setFeatures] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState({});
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
   const [error, setError] = useState('');
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+
+  // Check if user is on Sepolia network
+  const checkNetwork = async () => {
+    if (!window.ethereum) return false;
+    
+    try {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      return chainId === SEPOLIA_CHAIN_ID;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      return false;
+    }
+  };
+
+  // Switch to Sepolia network
+  const switchToSepolia = async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: SEPOLIA_CHAIN_ID }],
+      });
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: SEPOLIA_CHAIN_ID,
+                chainName: 'Sepolia Test Network',
+                nativeCurrency: {
+                  name: 'SepoliaETH',
+                  symbol: 'ETH',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://sepolia.infura.io/v3/'],
+                blockExplorerUrls: ['https://sepolia.etherscan.io/'],
+              },
+            ],
+          });
+        } catch (addError) {
+          console.error('Error adding Sepolia network:', addError);
+          setError('Failed to add Sepolia network to MetaMask');
+        }
+      } else {
+        console.error('Error switching to Sepolia:', switchError);
+        setError('Failed to switch to Sepolia network');
+      }
+    }
+  };
 
   // Initialize Web3 connection
   useEffect(() => {
@@ -24,12 +77,16 @@ const PlansComponent = () => {
           console.log('Initializing Web3...');
           const web3Provider = new ethers.BrowserProvider(window.ethereum);
           
+          // Check network first
+          const networkCorrect = await checkNetwork();
+          setIsCorrectNetwork(networkCorrect);
+          
           // Check if already connected
           const accounts = await window.ethereum.request({
             method: 'eth_accounts'
           });
           
-          if (accounts.length > 0) {
+          if (accounts.length > 0 && networkCorrect) {
             const signer = await web3Provider.getSigner();
             const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
             
@@ -38,31 +95,60 @@ const PlansComponent = () => {
             setAccount(accounts[0]);
             console.log('Web3 initialized successfully with account:', accounts[0]);
           } else {
-            // Create contract instance without signer for read-only operations
-            const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, web3Provider);
             setProvider(web3Provider);
-            setContract(contractInstance);
-            console.log('Web3 initialized for read-only operations');
+            console.log('Web3 provider initialized, waiting for proper connection');
           }
         } catch (error) {
           console.error('Failed to initialize Web3:', error);
           setError(`Failed to connect to wallet: ${error.message}`);
-          setLoading(false);
         }
       } else {
         setError('Please install MetaMask to use this feature');
-        setLoading(false);
       }
     };
 
     initWeb3();
+
+    // Listen for network changes
+    if (window.ethereum) {
+      const handleChainChanged = async () => {
+        const networkCorrect = await checkNetwork();
+        setIsCorrectNetwork(networkCorrect);
+        
+        if (networkCorrect) {
+          window.location.reload();
+        }
+      };
+
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length === 0) {
+          setAccount(null);
+          setContract(null);
+        } else {
+          window.location.reload();
+        }
+      };
+
+      window.ethereum.on('chainChanged', handleChainChanged);
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      };
+    }
   }, []);
 
-  // Fetch plans and features
+  // Fetch plans and features - only when properly connected
   useEffect(() => {
     const fetchPlansAndFeatures = async () => {
-      if (!contract) {
-        console.log('Contract not available yet');
+      // Only fetch if we have a contract instance and user is connected to correct network
+      if (!contract || !account || !isCorrectNetwork) {
+        console.log('Not fetching plans - missing requirements:', { 
+          contract: !!contract, 
+          account: !!account, 
+          isCorrectNetwork 
+        });
         return;
       }
 
@@ -75,9 +161,6 @@ const PlansComponent = () => {
         console.log('Starting to fetch plans and features...');
         setLoading(true);
         setError('');
-        
-        // Test contract connection first
-        console.log('Testing contract connection...');
         
         // Fetch all plans
         console.log('Fetching plans...');
@@ -165,15 +248,7 @@ const PlansComponent = () => {
       } catch (error) {
         console.error('Error fetching plans:', error);
         clearTimeout(timeoutId);
-        
-        // Check if it's a network error
-        if (error.message.includes('network') || error.message.includes('timeout')) {
-          setError('Network error. Please check your connection and make sure you\'re connected to the correct network (Sepolia testnet).');
-        } else if (error.message.includes('revert')) {
-          setError('Contract error. The contract may not be deployed correctly.');
-        } else {
-          setError(`Failed to load plans: ${error.message}`);
-        }
+        setError(`Failed to load plans: ${error.message}`);
       } finally {
         console.log('Finished fetching plans');
         setLoading(false);
@@ -181,11 +256,19 @@ const PlansComponent = () => {
     };
 
     fetchPlansAndFeatures();
-  }, [contract]);
+  }, [contract, account, isCorrectNetwork]);
 
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
+        // First check if we're on the right network
+        const networkCorrect = await checkNetwork();
+        
+        if (!networkCorrect) {
+          await switchToSepolia();
+          return;
+        }
+
         await window.ethereum.request({
           method: 'eth_requestAccounts'
         });
@@ -199,6 +282,11 @@ const PlansComponent = () => {
   const handlePurchase = async (planName, duration) => {
     if (!account || !contract) {
       setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!isCorrectNetwork) {
+      setError('Please switch to Sepolia network');
       return;
     }
 
@@ -264,6 +352,13 @@ const PlansComponent = () => {
             Connect Wallet
           </button>
         </div>
+      ) : !isCorrectNetwork ? (
+        <div className="wallet-status">
+          <p>Please switch to Sepolia testnet to continue</p>
+          <button onClick={switchToSepolia} className="connect-wallet-btn">
+            Switch to Sepolia
+          </button>
+        </div>
       ) : (
         <div className="wallet-status connected">
           <p>Connected: {account.slice(0, 6)}...{account.slice(-4)}</p>
@@ -273,6 +368,12 @@ const PlansComponent = () => {
       {error && (
         <div className="error-message">
           {error}
+        </div>
+      )}
+
+      {account && isCorrectNetwork && plans.length === 0 && !loading && (
+        <div className="no-plans">
+          <p>No plans available at the moment. Please check back later.</p>
         </div>
       )}
 
@@ -314,7 +415,7 @@ const PlansComponent = () => {
                 </div>
                 <button 
                   onClick={() => handlePurchase(plan.name, 1)}
-                  disabled={purchasing[`${plan.name}-1`] || !account}
+                  disabled={purchasing[`${plan.name}-1`] || !account || !isCorrectNetwork}
                   className="buy-btn"
                 >
                   {purchasing[`${plan.name}-1`] ? 'Processing...' : 'Buy 1 Month'}
@@ -332,7 +433,7 @@ const PlansComponent = () => {
                 </div>
                 <button 
                   onClick={() => handlePurchase(plan.name, 12)}
-                  disabled={purchasing[`${plan.name}-12`] || !account}
+                  disabled={purchasing[`${plan.name}-12`] || !account || !isCorrectNetwork}
                   className="buy-btn primary"
                 >
                   {purchasing[`${plan.name}-12`] ? 'Processing...' : 'Buy 12 Months'}
